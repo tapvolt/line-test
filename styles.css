@@ -1,0 +1,23 @@
+body,
+html {
+    background-color: bisque;
+    margin: 0;
+    border: 0;
+    overflow: hidden;
+}
+
+#paper {
+    border: 1px solid whitesmoke;
+    position: absolute; 
+    box-shadow: 10px 10px 20px burlywood;
+
+    background-color: white;
+
+    top: 50px; 
+    
+    width: 576.958px; 
+    height: 816px;     
+    
+    left: 50%;
+    transform: translateX(-50%);
+}
