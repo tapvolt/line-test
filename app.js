@@ -1,12 +1,17 @@
+"use strict";
 
 const page = {
 
     // GUI
-    parameters: {
-        maxLines: 0,
-        direction: "Horizontal"
+    guiConfig: {
+        numLines: 1,
+        direction: "Horizontal",
+        export: function(){}
     },
-
+    numLines: {},
+    direction: {},
+    margins: {},
+    
     // A3
     paper: {
         width: 3508,
@@ -14,57 +19,89 @@ const page = {
         colour: "#FFFFFF"
     },
 
-    ctx: null,
-    lineWidth: 5,
+    svg: {},
 
     init: () => {        
-        const canvas = document.getElementById("paper");
-        canvas.setAttribute("width", page.paper.width);
-        canvas.setAttribute("height", page.paper.height);
-        page.ctx = canvas.getContext("2d"); 
-        page.ctx.lineWidth = page.lineWidth;
+        page.svg = SVG().addTo("#paper").size(page.paper.width, page.paper.height);  
+        page.svg.size("100%", "100%");  
+        page.svg.viewbox(0, 0, page.paper.width, page.paper.height);
+
         page.showGUI();
+        page.redraw();       
     },
 
     showGUI: () => {
+        // https://github.com/dataarts/dat.gui/blob/master/API.md
         let gui = new dat.GUI();          
-        let maxLines = gui.add(page.parameters, "maxLines").min(0).max(300).step(1).listen();
-        maxLines.onChange(function(value){
-            page.redraw(value);
+        
+        page.numLines = gui.add(page.guiConfig, "numLines").min(1).max(300).step(1).name("# of lines").listen();
+        page.numLines.onChange(function(){
+            page.redraw();
         });
-        let direction = gui.add(page.parameters, "direction", ["Horizontal", "Vertical"]).name("direction").listen();
-        direction.onChange(function(value){
-            console.log(value);		
+        
+        page.direction = gui.add(page.guiConfig, "direction", ["Horizontal", "Vertical"]).name("Direction").listen();
+        page.direction.onChange(function(){
+            page.redraw();
         });
-        gui.show();
+
+        page.margins = gui.add(page.guiConfig, "margins").name("Draw margins").listen();
+        page.margins.onChange(function(){
+            page.redraw();
+        });
+
+        let exportSvg = gui.add(page.guiConfig, "export").name("Export SVG").listen();
+        exportSvg.onChange(function(){
+            page.download();
+        });
+
+        gui.show();        
     },
 
-    redraw: (value) => {    
-        page.clear();	
-        // let sections = 1 + value;
-        // console.log(`value is ${value}, divide into ${sections} Y sections`)
-        let y = page.paper.height / (value + 1);
-        for(let i = 1; i <= value; i++) {            
-            page.ctx.beginPath();
-            page.ctx.moveTo(
-                0,
-                i * y
-            );
-            page.ctx.lineTo(
-                page.paper.width, 
-                i * y
-            );
-            page.ctx.stroke();
+    redraw: () => {    
+        page.clear();
+        let value = page.numLines.getValue();
+    
+        if(page.direction.getValue() == "Vertical") {
+            let divisions = page.paper.width / (value + 1);
+            for(let i = 1; i <= value; i++) {                
+                page.svg.line(i * divisions, 0, i * divisions, page.paper.height).stroke({ width: 8, color: "#000"});
+            }
+        } else {
+            let divisions = page.paper.height / (value + 1);
+            for(let i = 1; i <= value; i++) {                
+                page.svg.line(0, i * divisions, page.paper.width, i * divisions).stroke({ width: 8, color: "#000"});
+            }
+        }
+
+        if (page.margins.getValue()) {
+            // top  x,y
+            page.svg.rect(page.paper.width, 400).attr({stroke: 0, fill: '#fff', id: 10 });
+
+            // bottom  x,y
+            page.svg.rect(page.paper.width, 600).attr({stroke : 0, fill: '#fff', id: 10 }).move(0, page.paper.height - 600);
+
+            // left
+            page.svg.rect(400, page.paper.height).attr({stroke: 0, fill: '#fff', id: 10 });
+
+            // right
+            page.svg.rect(400, page.paper.height).attr({stroke: 0, fill: '#fff', id: 10 }).move(page.paper.width - 400, 0);
         }
     },
 
     clear: () => {
-        page.ctx.fillStyle = page.paper.colour;
-        page.ctx.fillRect(
-            0, 
-            0, 
-            page.paper.width, 
-            page.paper.height
-        );
+        page.svg.clear();
     },
+
+    download: () => {
+        let svgString = page.svg.flatten().svg();
+        // https://ruslan.rocks/posts/file-download-in-javascript
+        let element = document.createElement("a");
+        element.setAttribute("download", "image.svg");
+        document.body.appendChild(element);        
+        element.setAttribute("href", window.URL.createObjectURL(
+            new Blob([svgString], {type: "text/plain;charset=utf-8"})
+        ));
+        element.click();
+        document.body.removeChild(element);
+    }
 };

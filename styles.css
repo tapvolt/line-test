@@ -6,6 +6,11 @@ html {
     overflow: hidden;
 }
 
+#help {
+    margin-top: 10px;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+}
+
 #paper {
     border: 1px solid whitesmoke;
     position: absolute; 

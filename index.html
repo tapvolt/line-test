@@ -3,11 +3,18 @@
         <title>Plotter - Line Test</title>
         <link rel="stylesheet" href="styles.css">
         <script type="text/javascript" src="dat.gui.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.2.0/svg.min.js"></script>
         <script type="text/javascript" src="app.js"></script>
     </head>
-
     <body>
-        <canvas id="paper">
+        <div id="help">
+            <ul>
+                <li>We are using a HP7475A pen plotter</li>
+                <li>We are assuming A3</li>
+                <li>Image is portrait</li>                
+            </ul>
+        </div>        
+        <div id="paper"></div>
         <script>page.init();</script>
     </body>
 </html>
